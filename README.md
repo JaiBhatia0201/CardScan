@@ -12,6 +12,14 @@ This repository exists to:
 
 ---
 
+🌐 Live Demo
+
+🔗 Deployed Application [here](https://cardscan-6jbc.onrender.com)
+
+The app is deployed using a Docker-based setup on Render to ensure proper support for OCR and PDF processing dependencies (Tesseract & Poppler).
+
+---
+
 ## 🚀 Features
 
 * 📸 **Multiple Input Methods**
@@ -168,12 +176,35 @@ http://localhost:5000
 
 ---
 
-## 📦 Deployment Notes
+## 📦 Deployment
 
-* This repository is actively used for deployment on **Render**
-* Uses **Gunicorn** as the production WSGI server
-* All sensitive credentials are loaded via environment variables (`.env`)
-* PDF OCR may require additional system dependencies (Poppler) on cloud hosts
+This project is deployed using **Docker** to ensure reliable availability of required system-level dependencies such as **Tesseract OCR** and **Poppler**.
+
+### Why Docker?
+
+Initial deployment attempts using a standard Python service on Render were unsuccessful due to missing native dependencies required for OCR and PDF processing. Since these dependencies cannot be reliably installed in a plain Python runtime, the project was migrated to a **Docker-based deployment**.
+
+Docker allows full control over the runtime environment and ensures consistent behavior across development and production.
+
+### Docker-Based Deployment (Recommended)
+
+The application uses a custom `Dockerfile` that:
+- Uses a slim Python base image
+- Installs Tesseract OCR and Poppler utilities
+- Installs Python dependencies from `requirements.txt`
+- Runs the application using Gunicorn
+
+### Deploying on Render (Docker)
+
+1. Create a new **Web Service** on Render
+2. Select **Docker** as the environment
+3. Connect the GitHub repository
+4. Configure required environment variables in the Render dashboard
+5. Deploy — Render automatically builds and runs the container
+
+No additional start command or Procfile configuration is required when using Docker.
+
+> Note: The `Procfile` is retained for non-Docker deployments, but Docker is the recommended and actively used deployment method.
 
 ---
 
