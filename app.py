@@ -33,9 +33,7 @@ GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 SCOPES = ['https://www.googleapis.com/auth/contacts']
 
 
-# --- Windows Path Configurations (Ignored by Render, required for local testing) ---
-POPPLER_PATH = r'C:\Program Files (x86)\poppler-25.12.0\Library\bin' 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -165,7 +163,7 @@ def process_ocr(filepath: str) -> List[str]:
             
     elif file_extension == 'pdf':
         try:
-            images = convert_from_path(filepath, poppler_path=POPPLER_PATH, dpi=300) 
+            images = convert_from_path(filepath, dpi=300) 
             
             for i, img in enumerate(images):
                 print(f"Processing page {i+1} of PDF...")
