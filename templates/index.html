@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Card Manager MVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        [contenteditable]:hover {
+            background-color: #f0f4ff;
+            border-radius: 4px;
+        }
+
+        /* Style the video element for capture */
+        #camera-video {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            transform: scaleX(-1);
+            /* Flips the front camera image */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Header & Status Message -->
+    <header class="w-full max-w-5xl text-center py-6">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-2">
+            CardScan <span
+                class="text-sm font-medium text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full align-top">MVP</span>
+        </h1>
+        <p class="text-gray-600">Digitize your business cards into a clean spreadsheet.</p>
+    </header>
+
+    <main class="w-full max-w-5xl bg-white p-6 md:p-8 rounded-xl shadow-2xl border border-gray-100">
+
+        <!-- Status Message Display -->
+        {% if status_message %}
+        <div id="status-alert"
+            class="bg-indigo-100 border border-indigo-300 text-indigo-800 px-4 py-3 rounded-lg relative mb-6"
+            role="alert">
+            <span class="block sm:inline">{{ status_message }}</span>
+        </div>
+        {% endif %}
+
+        <!-- MAIN CONTENT -->
+
+        {% if cards %}
+        <!-- Results Table (UNCHANGED) -->
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center justify-between">
+            Extracted Data (Step 2/3)
+            <span class="text-base font-medium text-gray-500">{{ cards | length }} Card{{ 's' if cards | length > 1 }}
+                Found</span>
+        </h2>
+
+        <p class="text-sm text-gray-600 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            ⚠️ **Review & Edit:** The fields are editable! Please review and correct any misparsed data before
+            exporting.
+        </p>
+
+        <div class="overflow-x-auto shadow-md rounded-lg mb-8">
+            <table id="results-table" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-indigo-600">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Card #
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Name
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Company
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Email
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Phone
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Website
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Raw Text
+                            (Guess Work)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for card in cards %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ loop.index }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Name"
+                            contenteditable="true">{{ card.Name | default('---', true) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Company"
+                            contenteditable="true">{{ card.Company | default('---', true) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Email"
+                            contenteditable="true">{{ card.Email | default('---', true) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Phone"
+                            contenteditable="true">{{ card.Phone | default('---', true) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Website"
+                            contenteditable="true">{{ card.Website | default('---', true) }}</td>
+                        <td class="px-6 py-4 text-xs text-gray-500 max-w-xs overflow-hidden truncate hover:truncate-none"
+                            title="{{ card.Raw_Text_Placeholder }}">{{ card.Raw_Text_Placeholder | default('---', true)
+                            }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons (Step 3/3) - UNCHANGED -->
+        <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+            <button onclick="exportData('csv')"
+                class="flex-1 py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 transition duration-150 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50">
+                <svg class="inline w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export to CSV/Excel
+            </button>
+
+            <button onclick="syncToGoogle()"
+                class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+                <svg class="inline w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+                Sync to Google Contacts
+            </button>
+        </div>
+
+        <button onclick="window.location.href='/'"
+            class="w-full mt-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition duration-150">
+            ← Start New Upload
+        </button>
+
+
+        {% else %}
+        <!-- UPLOAD/CAPTURE INTERFACE (NEW TABS) -->
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Capture Cards (Step 1/3)</h2>
+
+        <!-- Tab Buttons -->
+        <div class="flex border-b border-gray-200 mb-6 w-full">
+            <button onclick="showTab('file')"
+                class="tab-button flex-1 py-3 px-1 text-sm font-medium rounded-t-lg transition duration-150"
+                data-tab="file">
+                Upload File (Image/PDF)
+            </button>
+            <button onclick="showTab('camera')"
+                class="tab-button flex-1 py-3 px-1 text-sm font-medium rounded-t-lg transition duration-150"
+                data-tab="camera">
+                Use Phone Camera
+            </button>
+        </div>
+
+        <!-- File Upload Tab Content -->
+        <div id="file-tab" class="tab-content w-full">
+            <p class="text-sm text-gray-500 mb-6">Upload an image (JPG/PNG) or a multi-page PDF.</p>
+            <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
+                <label for="file-upload"
+                    class="flex flex-col items-center justify-center w-full h-48 border-4 border-dashed border-indigo-300 rounded-xl cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition duration-300">
+                    <svg class="w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <p class="mt-2 text-sm text-indigo-700 font-semibold">Click to upload or drag and drop</p>
+                    <p class="text-xs text-indigo-500 mt-1">Single file upload (Max 10MB)</p>
+                    <input id="file-upload" name="file" type="file" class="hidden" required>
+                </label>
+                <button type="submit"
+                    class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                    Process Card(s)
+                </button>
+            </form>
+        </div>
+
+        <!-- Camera Tab Content -->
+        <div id="camera-tab" class="tab-content w-full hidden">
+            <p class="text-sm text-gray-500 mb-6">Position the business card clearly and tap Capture.</p>
+            <div class="space-y-4">
+                <div id="video-container" class="relative bg-gray-900 rounded-xl overflow-hidden">
+                    <video id="camera-video" autoplay playsinline></video>
+                    <!-- Image preview for captured photo -->
+                    <img id="capture-preview" class="w-full h-auto hidden" alt="Captured Image Preview">
+                </div>
+
+                <canvas id="camera-canvas" class="hidden"></canvas>
+
+                <button id="start-camera-button" onclick="startCamera()"
+                    class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                    Activate Camera
+                </button>
+
+                <button id="capture-button" onclick="capturePhoto()"
+                    class="w-full py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 hidden">
+                    Capture Photo
+                </button>
+
+                <button id="process-capture-button" onclick="processCapture()"
+                    class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 hidden">
+                    Process Captured Card
+                </button>
+
+                <button id="retake-button" onclick="retakePhoto()"
+                    class="w-full py-3 bg-gray-500 text-white font-bold rounded-lg shadow-lg hover:bg-gray-600 transition duration-150 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 hidden">
+                    Retake Photo
+                </button>
+            </div>
+        </div>
+
+        {% endif %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-sm text-gray-400">
+        &copy; 2024 CardScan Project
+    </footer>
+
+    <!-- JavaScript Functions for Interactivity (UPDATED) -->
+    <script>
+        // --- TAB CONTROL LOGIC ---
+        let currentStream = null;
+
+        function showTab(tabName) {
+            // Deactivate all tabs and content
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'bg-white', 'border-indigo-600');
+                btn.classList.add('text-gray-500', 'hover:text-gray-700');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Activate selected tab and content
+            document.querySelector(`.tab-button[data-tab="${tabName}"]`).classList.add('text-indigo-600', 'bg-white', 'border-indigo-600');
+            document.querySelector(`.tab-button[data-tab="${tabName}"]`).classList.remove('text-gray-500', 'hover:text-gray-700');
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+
+            if (tabName === 'camera') {
+                // If switching to camera, show the activation button
+                document.getElementById('start-camera-button').classList.remove('hidden');
+                document.getElementById('capture-button').classList.add('hidden');
+                document.getElementById('process-capture-button').classList.add('hidden');
+                document.getElementById('retake-button').classList.add('hidden');
+                document.getElementById('camera-video').classList.remove('hidden');
+                document.getElementById('capture-preview').classList.add('hidden');
+            } else {
+                stopCamera();
+            }
+        }
+
+        // Initialize to the file upload tab on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.querySelector('.tab-button[data-tab="file"]').classList.contains('text-indigo-600')) {
+                showTab('file');
+            }
+        });
+
+
+        // --- CAMERA LOGIC ---
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            const video = document.getElementById('camera-video');
+            video.srcObject = null;
+        }
+
+        async function startCamera() {
+            stopCamera(); // Ensure any previous stream is closed
+            const video = document.getElementById('camera-video');
+
+            // Mobile Optimization: Prefer the environment (back) camera
+            const constraints = {
+                video: {
+                    facingMode: { ideal: 'environment' } // Uses back camera if available
+                }
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                video.play();
+
+                document.getElementById('start-camera-button').classList.add('hidden');
+                document.getElementById('capture-button').classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Camera access failed:", err);
+                alert("Cannot access camera. Please ensure permissions are granted or switch to file upload.");
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            const preview = document.getElementById('capture-preview');
+
+            // Set canvas dimensions to the video dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw the current frame onto the canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Stop the video feed and show the captured image
+            stopCamera();
+            video.classList.add('hidden');
+            preview.src = canvas.toDataURL('image/jpeg');
+            preview.classList.remove('hidden');
+
+            document.getElementById('capture-button').classList.add('hidden');
+            document.getElementById('process-capture-button').classList.remove('hidden');
+            document.getElementById('retake-button').classList.remove('hidden');
+        }
+
+        function retakePhoto() {
+            const video = document.getElementById('camera-video');
+            const preview = document.getElementById('capture-preview');
+
+            preview.classList.add('hidden');
+            video.classList.remove('hidden');
+
+            // Restart the camera feed
+            startCamera();
+
+            document.getElementById('process-capture-button').classList.add('hidden');
+            document.getElementById('retake-button').classList.add('hidden');
+        }
+
+        async function processCapture() {
+            const canvas = document.getElementById('camera-canvas');
+
+            // Convert the canvas data (base64) into a Blob object (a file-like structure)
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    alert("Capture failed. Please retake the photo.");
+                    return;
+                }
+
+                // 1. Create a virtual file object
+                const formData = new FormData();
+                // We name the file 'captured_card.jpeg'
+                formData.append('file', blob, 'captured_card.jpeg');
+
+                // 2. Disable buttons and show loading state
+                const processButton = document.getElementById('process-capture-button');
+                processButton.disabled = true;
+                processButton.textContent = 'Processing... Please Wait.';
+
+                // 3. Submit the file to the existing Flask upload route
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    // Flask redirects to the homepage on successful processing or failure
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        throw new Error('Server response failed or did not redirect.');
+                    }
+
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    alert('An error occurred during processing. Please check the console.');
+                    processButton.disabled = false;
+                    processButton.textContent = 'Process Captured Card';
+                }
+            }, 'image/jpeg');
+        }
+
+        // --- STANDARD APP LOGIC (UNCHANGED) ---
+
+        // JS for file name display on the upload form 
+        document.getElementById('file-upload').onchange = function () {
+            const file = this.files[0];
+            if (file) {
+                document.querySelector('label[for="file-upload"] p.text-indigo-700').textContent = file.name;
+                document.querySelector('label[for="file-upload"] p.text-indigo-500').textContent = (file.size / 1024 / 1024).toFixed(2) + " MB - Ready to process.";
+            }
+        };
+
+        // Function to extract data from the editable table
+        function getTableData() {
+            const rows = document.querySelectorAll('#results-table tbody tr');
+            const data = [];
+            rows.forEach(row => {
+                const card = {};
+                // We extract data from contenteditable cells
+                row.querySelectorAll('td[data-field]').forEach(cell => {
+                    const field = cell.getAttribute('data-field');
+                    card[field] = cell.textContent.trim();
+                });
+
+                // Ensure all fields are present for the backend functions
+                const fields = ['Name', 'Designation', 'Company', 'Email', 'Phone', 'Website', 'Address'];
+                fields.forEach(field => {
+                    if (!card.hasOwnProperty(field)) {
+                        card[field] = '';
+                    }
+                });
+
+                // Include the raw text for context, even if not editable
+                const rawTextCell = row.querySelector('td:last-child');
+                card['Raw_Text_Placeholder'] = rawTextCell.title || rawTextCell.textContent.trim();
+
+                data.push(card);
+            });
+            return data;
+        }
+
+        // Action 1: Export to CSV 
+        async function exportData(format) {
+            const data = getTableData();
+            if (data.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'CardScan_Export.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    alert("Export successful! Check your downloads folder.");
+                } else {
+                    const error = await response.json();
+                    alert(`Export failed: ${error.error}`);
+                }
+
+            } catch (error) {
+                console.error('Export error:', error);
+                alert(`An unknown error occurred during export.`);
+            }
+        }
+
+        // Action 2: Sync to Google Contacts 
+        async function syncToGoogle() {
+            const data = getTableData();
+            if (data.length === 0) {
+                alert('No data to sync! Please upload and process cards first.');
+                return;
+            }
+
+            if (!data.some(c => c.Name || c.Email)) {
+                alert('Data is empty. Please edit the table before syncing.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/sync/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.redirect) {
+                    window.location.href = result.redirect;
+                } else if (result.error) {
+                    alert(`Sync Initialization Error: ${result.error}`);
+                } else {
+                    alert('Sync failed to initialize. Check server logs for OAuth configuration errors.');
+                }
+
+            } catch (error) {
+                console.error('Google Sync initiation error:', error);
+                alert('An unknown network error occurred during sync setup.');
+            }
+        }
+    </script>
+</body>
+
+</html>

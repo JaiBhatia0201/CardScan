@@ -1,0 +1,222 @@
+# CardScan – Business Card Manager (MVP)
+
+CardScan is a **Flask-based web application** built as a *purpose-driven personal project* with the long-term goal of evolving into a **commercial-ready product** (web + mobile).
+
+The current version represents the **MVP (Minimum Viable Product)** of the web platform. It focuses on validating the core idea: converting physical business cards into structured, reusable digital contact data using **OCR and AI**, followed by real-world exports and integrations.
+
+This repository exists to:
+
+* Clearly communicate the project vision and capabilities
+* Serve as a deployment-ready codebase (Render)
+* Act as a technical foundation for future expansion
+
+---
+
+## 🚀 Features
+
+* 📸 **Multiple Input Methods**
+
+  * Upload images (`.jpg`, `.png`) or PDFs
+  * Capture cards directly using your phone camera (mobile-friendly)
+
+* 🔍 **OCR Processing**
+
+  * Image preprocessing for better accuracy
+  * Text extraction using **Tesseract OCR**
+
+* 🤖 **AI-Powered Data Structuring**
+
+  * Uses **Google Gemini API** to convert raw OCR text into structured fields:
+
+    * Name
+    * Designation
+    * Company
+    * Phone
+    * Email
+    * Address
+    * Website
+
+* ✏️ **Editable Review Table**
+
+  * Review & manually correct extracted data before exporting
+
+* 📤 **Export Options**
+
+  * Export cleaned data to **CSV / Excel**
+
+* 🔗 **Google Contacts Integration**
+
+  * OAuth 2.0 based sync with Google Contacts
+
+---
+
+## 🛠️ Tech Stack
+
+**Backend**
+
+* Python
+* Flask
+* Gunicorn (production server)
+
+**Frontend**
+
+* HTML (Jinja2 templates)
+* Tailwind CSS
+* Vanilla JavaScript
+
+**AI & OCR**
+
+* Tesseract OCR
+* Google Gemini API (LLM-based parsing)
+
+**Integrations**
+
+* Google People API (Contacts)
+* OAuth 2.0
+
+---
+
+## 📂 Project Structure
+
+```
+CardScan/
+├── app.py
+├── requirements.txt
+├── uploads/            # Temporary upload storage
+├── templates/
+│   └── index.html      # Main UI
+├── .env                # Environment variables (not committed)
+└── README.md
+```
+
+---
+
+## ⚙️ Setup & Installation
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-username/cardscan.git
+cd cardscan
+```
+
+### 2️⃣ Create & Activate Virtual Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+### 3️⃣ Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4️⃣ Install System Dependencies
+
+**Tesseract OCR**
+
+* Windows: [https://github.com/UB-Mannheim/tesseract/wiki](https://github.com/UB-Mannheim/tesseract/wiki)
+* Linux:
+
+```bash
+sudo apt install tesseract-ocr poppler-utils
+```
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+FLASK_SECRET_KEY=your_secret_key
+
+GEMINI_API_KEY=your_gemini_api_key
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:5000/oauth2callback
+```
+
+> ⚠️ Without the Gemini API key, the app will still work but **AI structuring will be skipped**.
+
+---
+
+## ▶️ Running the App Locally
+
+```bash
+python app.py
+```
+
+Open your browser at:
+
+```
+http://localhost:5000
+```
+
+---
+
+## 🔄 Usage Flow
+
+1. Upload a business card image / PDF **or** capture via camera
+2. OCR extracts raw text
+3. Gemini AI structures the data
+4. Review & edit extracted fields
+5. Export to CSV **or** sync to Google Contacts
+
+---
+
+## 📦 Deployment Notes
+
+* This repository is actively used for deployment on **Render**
+* Uses **Gunicorn** as the production WSGI server
+* All sensitive credentials are loaded via environment variables (`.env`)
+* PDF OCR may require additional system dependencies (Poppler) on cloud hosts
+
+---
+
+## 🧪 Limitations (MVP)
+
+* OCR accuracy depends heavily on image quality
+* Multi-page PDF OCR may fail on some cloud environments
+* No authentication / user accounts (single-session based)
+
+---
+
+## 🔮 Future Improvements
+
+* User authentication & dashboards
+* Better OCR preprocessing (deskewing, denoising)
+* Batch processing of multiple cards
+* Database persistence
+* Card image storage & history
+* Mobile-first PWA version
+
+---
+
+## 📜 License
+
+This project is currently maintained as a **personal / proprietary MVP**.
+
+The code is published publicly for:
+
+* Transparency
+* Deployment purposes
+* Demonstration of technical capability
+
+Reuse, redistribution, or commercial usage should be discussed with the author.
+
+---
+
+## 🙌 Acknowledgements
+
+* Tesseract OCR
+* Google Gemini API
+* Google People API
+* Tailwind CSS
+
+---
+
+⭐ If you found this project helpful or interesting, consider giving it a star!
