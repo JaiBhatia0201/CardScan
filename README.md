@@ -12,11 +12,11 @@ This repository exists to:
 
 ---
 
-🌐 Live Demo
+## 🌐 Live Demo
 
-🔗 Deployed Application [here](https://cardscan-6jbc.onrender.com)
+🔗 **Deployed Application [here](https://cardscan-6jbc.onrender.com)**
 
-The app is deployed using a Docker-based setup on Render to ensure proper support for OCR and PDF processing dependencies (Tesseract & Poppler).
+> The app is deployed using a Docker-based setup on Render to ensure proper support for OCR and PDF processing dependencies (Tesseract & Poppler).
 
 ---
 
