@@ -242,11 +242,23 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
+        print("\n!!! ERROR: File not found in request.files. !!!")
+        print(f"Request Data Keys: {request.form.keys()}")
+        print(f"Request Files Keys: {request.files.keys()}")
+
+        # Check if the user is sending data as base64 in the body,
+        # which can happen if the FormData logic is broken
+        if request.data:
+            print(f"Raw Request Data Length: {len(request.data)} bytes")
+
+        # Set a status message for the user before redirecting
+        session['status_message'] = "Error: File not received by the server. Please try uploading again."
         return redirect(url_for('index'))
 
     file = request.files['file']
 
     if file.filename == '':
+        session['status_message'] = "Error: File name is empty."
         return redirect(url_for('index'))
 
     if file and allowed_file(file.filename):
@@ -275,6 +287,7 @@ def upload_file():
         return redirect(url_for('index'))
 
     print("Error: File type not allowed.")
+    session['status_message'] = "Error: File type not allowed."
     return redirect(url_for('index'))
 
 
