@@ -22,8 +22,7 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
-            transform: scaleX(-1);
-            /* Flips the front camera image */
+            /* The inversion flip is REMOVED from CSS and will be handled by default JS drawing. */
         }
     </style>
 </head>
@@ -61,14 +60,19 @@
         </h2>
 
         <p class="text-sm text-gray-600 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-            ⚠️ **Review & Edit:** The fields are editable! Please review and correct any misparsed data before
-            exporting.
+            ⚠️ **Review & Edit:** Please review, correct the editable fields, and **select the cards** you wish to
+            export or sync.
         </p>
 
+        <!-- Table to display structured data -->
         <div class="overflow-x-auto shadow-md rounded-lg mb-8">
             <table id="results-table" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-indigo-600">
                     <tr>
+                        <th class="px-6 py-3 text-left">
+                            <input type="checkbox" id="select-all" onclick="toggleAllCheckboxes(this)"
+                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Card #
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Name
@@ -82,12 +86,16 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Website
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Raw Text
-                            (Guess Work)</th>
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for card in cards %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50" data-card-id="{{ loop.index }}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <input type="checkbox"
+                                class="card-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ loop.index }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" data-field="Name"
                             contenteditable="true">{{ card.Name | default('---', true) }}</td>
@@ -108,8 +116,9 @@
             </table>
         </div>
 
-        <!-- Action Buttons (Step 3/3) - UNCHANGED -->
+        <!-- Action Buttons (Step 3/3) -->
         <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+
             <button onclick="exportData('csv')"
                 class="flex-1 py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 transition duration-150 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50">
                 <svg class="inline w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -117,7 +126,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
-                Export to CSV/Excel
+                Export Selected to CSV/Excel
             </button>
 
             <button onclick="syncToGoogle()"
@@ -127,7 +136,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                 </svg>
-                Sync to Google Contacts
+                Sync Selected to Google Contacts
             </button>
         </div>
 
@@ -138,7 +147,7 @@
 
 
         {% else %}
-        <!-- UPLOAD/CAPTURE INTERFACE (NEW TABS) -->
+        <!-- UPLOAD/CAPTURE INTERFACE -->
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Capture Cards (Step 1/3)</h2>
 
         <!-- Tab Buttons -->
@@ -222,11 +231,10 @@
 
     <!-- JavaScript Functions for Interactivity (UPDATED) -->
     <script>
-        // --- TAB CONTROL LOGIC ---
+        // --- TAB CONTROL LOGIC (UNCHANGED) ---
         let currentStream = null;
 
         function showTab(tabName) {
-            // Deactivate all tabs and content
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.remove('text-indigo-600', 'bg-white', 'border-indigo-600');
                 btn.classList.add('text-gray-500', 'hover:text-gray-700');
@@ -235,13 +243,11 @@
                 content.classList.add('hidden');
             });
 
-            // Activate selected tab and content
             document.querySelector(`.tab-button[data-tab="${tabName}"]`).classList.add('text-indigo-600', 'bg-white', 'border-indigo-600');
             document.querySelector(`.tab-button[data-tab="${tabName}"]`).classList.remove('text-gray-500', 'hover:text-gray-700');
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');
 
             if (tabName === 'camera') {
-                // If switching to camera, show the activation button
                 document.getElementById('start-camera-button').classList.remove('hidden');
                 document.getElementById('capture-button').classList.add('hidden');
                 document.getElementById('process-capture-button').classList.add('hidden');
@@ -253,7 +259,6 @@
             }
         }
 
-        // Initialize to the file upload tab on load
         document.addEventListener('DOMContentLoaded', () => {
             if (!document.querySelector('.tab-button[data-tab="file"]').classList.contains('text-indigo-600')) {
                 showTab('file');
@@ -261,8 +266,7 @@
         });
 
 
-        // --- CAMERA LOGIC ---
-
+        // --- CAMERA LOGIC (FIXED FOR NON-INVERTED LAPTOP CAM) ---
         function stopCamera() {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
@@ -273,14 +277,11 @@
         }
 
         async function startCamera() {
-            stopCamera(); // Ensure any previous stream is closed
+            stopCamera();
             const video = document.getElementById('camera-video');
-
-            // Mobile Optimization: Prefer the environment (back) camera
+            // Prefer the back camera (environment) for better quality scanning
             const constraints = {
-                video: {
-                    facingMode: { ideal: 'environment' } // Uses back camera if available
-                }
+                video: { facingMode: { ideal: 'environment' } }
             };
 
             try {
@@ -292,8 +293,18 @@
                 document.getElementById('capture-button').classList.remove('hidden');
 
             } catch (err) {
-                console.error("Camera access failed:", err);
-                alert("Cannot access camera. Please ensure permissions are granted or switch to file upload.");
+                console.error("Camera access failed, falling back to any available camera:", err);
+                // Fallback: If environment cam fails, try any available camera
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = currentStream;
+                    video.play();
+
+                    document.getElementById('start-camera-button').classList.add('hidden');
+                    document.getElementById('capture-button').classList.remove('hidden');
+                } catch (fallbackErr) {
+                    alert("Cannot access camera. Please ensure permissions are granted or switch to file upload.");
+                }
             }
         }
 
@@ -302,15 +313,16 @@
             const canvas = document.getElementById('camera-canvas');
             const preview = document.getElementById('capture-preview');
 
-            // Set canvas dimensions to the video dimensions
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-
-            // Draw the current frame onto the canvas
             const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Stop the video feed and show the captured image
+            // --- FIX: Draw without flipping the context ---
+            // The video feed (preview) is already correctly oriented on the desktop/laptop cam.
+            // Drawing it directly prevents the captured image from being inverted.
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // ---------------------------------------------
+
             stopCamera();
             video.classList.add('hidden');
             preview.src = canvas.toDataURL('image/jpeg');
@@ -328,7 +340,6 @@
             preview.classList.add('hidden');
             video.classList.remove('hidden');
 
-            // Restart the camera feed
             startCamera();
 
             document.getElementById('process-capture-button').classList.add('hidden');
@@ -338,36 +349,30 @@
         async function processCapture() {
             const canvas = document.getElementById('camera-canvas');
 
-            // Convert the canvas data (base64) into a Blob object (a file-like structure)
+            // --- FIX 2: Ensure Blob creation is robust (high quality jpeg) ---
             canvas.toBlob(async (blob) => {
                 if (!blob) {
                     alert("Capture failed. Please retake the photo.");
                     return;
                 }
 
-                // 1. Create a virtual file object
                 const formData = new FormData();
-                // We name the file 'captured_card.jpeg'
                 formData.append('file', blob, 'captured_card.jpeg');
 
-                // 2. Disable buttons and show loading state
                 const processButton = document.getElementById('process-capture-button');
                 processButton.disabled = true;
                 processButton.textContent = 'Processing... Please Wait.';
 
-                // 3. Submit the file to the existing Flask upload route
                 try {
                     const response = await fetch('/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        // Do not follow redirect, just reload the page to get session data
+                        redirect: 'manual'
                     });
 
-                    // Flask redirects to the homepage on successful processing or failure
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        throw new Error('Server response failed or did not redirect.');
-                    }
+                    // Force a reload which will fetch the new session data saved by Flask
+                    window.location.href = '/';
 
                 } catch (error) {
                     console.error('Processing error:', error);
@@ -375,7 +380,16 @@
                     processButton.disabled = false;
                     processButton.textContent = 'Process Captured Card';
                 }
-            }, 'image/jpeg');
+            }, 'image/jpeg', 0.95); // Request high quality JPEG blob
+        }
+
+        // --- SELECTION LOGIC (UNCHANGED) ---
+
+        function toggleAllCheckboxes(source) {
+            const checkboxes = document.querySelectorAll('.card-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
         }
 
         // --- STANDARD APP LOGIC (UNCHANGED) ---
@@ -389,19 +403,24 @@
             }
         };
 
-        // Function to extract data from the editable table
+        // Function to extract ONLY SELECTED (checked) data from the editable table
         function getTableData() {
             const rows = document.querySelectorAll('#results-table tbody tr');
             const data = [];
+
             rows.forEach(row => {
+                const checkbox = row.querySelector('.card-checkbox');
+                if (!checkbox || !checkbox.checked) {
+                    return;
+                }
+
                 const card = {};
-                // We extract data from contenteditable cells
+
                 row.querySelectorAll('td[data-field]').forEach(cell => {
                     const field = cell.getAttribute('data-field');
                     card[field] = cell.textContent.trim();
                 });
 
-                // Ensure all fields are present for the backend functions
                 const fields = ['Name', 'Designation', 'Company', 'Email', 'Phone', 'Website', 'Address'];
                 fields.forEach(field => {
                     if (!card.hasOwnProperty(field)) {
@@ -409,7 +428,6 @@
                     }
                 });
 
-                // Include the raw text for context, even if not editable
                 const rawTextCell = row.querySelector('td:last-child');
                 card['Raw_Text_Placeholder'] = rawTextCell.title || rawTextCell.textContent.trim();
 
@@ -422,7 +440,7 @@
         async function exportData(format) {
             const data = getTableData();
             if (data.length === 0) {
-                alert('No data to export!');
+                alert('No cards selected to export! Please check the boxes next to the cards you wish to save.');
                 return;
             }
 
@@ -443,7 +461,7 @@
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
-                    alert("Export successful! Check your downloads folder.");
+                    alert(`Export successful! ${data.length} cards saved to CSV.`);
                 } else {
                     const error = await response.json();
                     alert(`Export failed: ${error.error}`);
@@ -459,12 +477,12 @@
         async function syncToGoogle() {
             const data = getTableData();
             if (data.length === 0) {
-                alert('No data to sync! Please upload and process cards first.');
+                alert('No cards selected to sync! Please check the boxes next to the cards you wish to sync.');
                 return;
             }
 
             if (!data.some(c => c.Name || c.Email)) {
-                alert('Data is empty. Please edit the table before syncing.');
+                alert('Selected data is empty. Please ensure the cards have a Name or Email before syncing.');
                 return;
             }
 
